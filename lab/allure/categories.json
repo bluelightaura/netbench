@@ -1,0 +1,40 @@
+[
+  {
+    "name": "Стенд не поднят",
+    "messageRegex": ".*стенд не поднят.*",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Железка не умеет",
+    "messageRegex": ".*(не объявляет умение|не знает команды).*",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Защита настоящей железки",
+    "messageRegex": ".*добавь --apply.*",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Инструмент не установлен",
+    "messageRegex": ".*(не установлен|не выгружается).*",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Нет связи с узлом",
+    "messageRegex": ".*(TimeoutError|NetmikoTimeoutException|Connection refused|No route to host).*",
+    "matchedStatuses": ["broken", "failed"]
+  },
+  {
+    "name": "Отказ аутентификации",
+    "messageRegex": ".*(NetmikoAuthenticationException|Authentication failed).*",
+    "matchedStatuses": ["broken", "failed"]
+  },
+  {
+    "name": "Железка ответила не так",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Сломался сам набор",
+    "matchedStatuses": ["broken"]
+  }
+]
