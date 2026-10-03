@@ -1,0 +1,12 @@
+#cloud-config
+# Минимум: завести пользователя с ключом. Всё остальное ставит Ansible —
+# иначе одна и та же установка описывалась бы в двух местах.
+users:
+  - name: ${user}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_key}
+
+package_update: true
+packages: [python3]
