@@ -1,0 +1,63 @@
+# Слой 3, он же в GitLab. Отчёт отдаётся артефактом: Allure собирается там же,
+# где и в остальных двух, из одного и того же allure-results.
+stages: [checks, bench]
+
+default:
+  image: python:3.12
+
+# Общие переменные задаются здесь, а не в шаблоне задачи: `variables` в самой
+# задаче ключ не дополняет, а заменяет целиком, и docker-настройки потерялись бы.
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+# Быстрая проверка без стенда: ей не нужен ни docker, ни containerlab.
+karkas:
+  stage: checks
+  script:
+    - python -m pip install --upgrade pip
+    - python -m pip install -e '.[test]' ruff
+    - ruff check .
+    - pytest tests --no-header
+
+# Стенд — это контейнеры, поэтому задаче нужен свой docker. Без dind и
+# привилегированного раннера containerlab не поднимет ни одного узла.
+.bench:
+  stage: bench
+  services:
+    - name: docker:27-dind
+      alias: docker
+      command: ["--tls=false"]
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends docker.io make curl
+    - bash -c "$(curl -sL https://get.containerlab.dev)"
+    - python -m pip install --upgrade pip
+    - python -m pip install -e '.[test]'
+  script:
+    - make -C lab image
+    - make -C lab up TOPO=$TOPO
+    - pytest --bench $BENCH
+  after_script:
+    - make -C lab down TOPO=$TOPO || true
+  artifacts:
+    when: always
+    paths: [allure-results]
+    expire_in: 1 week
+
+virtual-l3:
+  extends: .bench
+  variables:
+    BENCH: virtual-l3
+    TOPO: l3-switches
+
+virtual-dc:
+  extends: .bench
+  variables:
+    BENCH: virtual-dc
+    TOPO: dc-fabric
+
+virtual-cpe:
+  extends: .bench
+  variables:
+    BENCH: virtual-cpe
+    TOPO: cpe-sdwan

@@ -1,0 +1,135 @@
+# Слой 3, основной пайплайн. Он здесь главный намеренно: только Actions дают
+# зелёный бейдж и публичную историю прогонов на той же странице, куда приходит
+# читатель. Jenkinsfile и .gitlab-ci.yml рядом — тот же набор в двух других
+# системах, чтобы переносимость была видна, а не заявлена.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # Быстрая проверка без стенда: описания сходятся, выгрузка даёт что надо,
+  # в репозитории нет адресов живой сети. Полминуты против десяти.
+  checks:
+    runs-on: ubuntu-latest
+    name: каркас
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Поставить зависимости
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[test]' ruff
+
+      - name: Линтер
+        run: ruff check .
+
+      - name: Офлайн-проверки каркаса
+        run: pytest tests --no-header -p no:cacheprovider
+
+  bench:
+    needs: checks
+    runs-on: ubuntu-latest
+    # Один и тот же набор против разных стендов. В CI гоняются только
+    # виртуальные: настоящие железки живут не здесь, и к ним ходят вручную
+    # или со своего раннера.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - bench: virtual-l3
+            topo: l3-switches
+          - bench: virtual-dc
+            topo: dc-fabric
+          - bench: virtual-cpe
+            topo: cpe-sdwan
+    name: ${{ matrix.bench }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Поставить containerlab
+        run: bash -c "$(curl -sL https://get.containerlab.dev)"
+
+      - name: Собрать образ узла
+        run: make -C lab image
+
+      - name: Поднять стенд
+        run: make -C lab up TOPO=${{ matrix.topo }}
+
+      - name: Прогнать тесты
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[test]'
+          pytest --bench ${{ matrix.bench }}
+
+      - name: Погасить стенд
+        if: always()
+        run: make -C lab down TOPO=${{ matrix.topo }}
+
+      # Сырые результаты уезжают наверх: отчёт собирается один, из всех
+      # стендов сразу, иначе три задачи дерутся за одну ветку gh-pages.
+      - name: Сохранить сырые результаты
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.bench }}
+          path: allure-results
+          if-no-files-found: warn
+          retention-days: 7
+
+  # Слой 4: один отчёт из результатов всех стендов, с историей прошлых
+  # прогонов. Отдельной задачей — чтобы публикацией занимался ровно один,
+  # и чтобы история не затиралась параллельными записями в gh-pages.
+  report:
+    needs: bench
+    if: always()
+    runs-on: ubuntu-latest
+    name: отчёт
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Забрать результаты всех стендов
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          merge-multiple: true
+          path: allure-results
+
+      # История живёт в самой ветке gh-pages: без неё в отчёте каждый прогон
+      # выглядит первым, и тренд по падениям не построить.
+      - name: Забрать историю прошлых отчётов
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: allure-history
+
+      - name: Собрать отчёт Allure
+        uses: simple-elf/allure-report-action@v1.12
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          keep_reports: 30
+
+      - name: Выложить отчёт на Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
