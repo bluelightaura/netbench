@@ -57,3 +57,41 @@ def test_known_benches_are_listed_for_a_typo(harness):
 def test_capabilities_are_read_without_raising_on_a_missing_profile(harness):
     assert harness._caps("no-such-profile") == set()
     assert "cli" in harness._caps("l3-switch")
+
+
+class FakeConn:
+    """Подделка netmiko: запоминает, что ей набрали."""
+
+    def __init__(self):
+        self.typed: list[str] = []
+
+    def send_command_timing(self, command, **kw):
+        self.typed.append(command)
+        return f"<ответ на {command}>"
+
+
+def test_configure_types_the_commands_from_the_profile(harness):
+    """Вход и выход из режима настройки берутся из профиля, а не из библиотеки."""
+    node = harness.Node("sw1", "sw1.example.net", "l3-switch",
+                        vars={"config_enter": "configure terminal", "config_exit": "end"})
+    conn = FakeConn()
+    rec = harness.Recorded(conn, "sw1", node)
+    rec.configure(["interface eth1", "description проба"])
+    assert conn.typed == ["configure terminal", "interface eth1", "description проба", "end"]
+
+
+def test_configure_writes_everything_into_the_transcript(harness):
+    node = harness.Node("sw1", "sw1.example.net", "l3-switch",
+                        vars={"config_enter": "configure terminal", "config_exit": "end"})
+    rec = harness.Recorded(FakeConn(), "sw1", node)
+    rec.configure(["interface eth1"])
+    assert "configure terminal" in rec.transcript and "end" in rec.transcript
+
+
+def test_configure_skips_when_the_profile_says_nothing_about_it(harness):
+    """Железка без описанного режима настройки — не дефект, а другая железка."""
+    node = harness.Node("sw1", "sw1.example.net", "l3-switch", vars={})
+    rec = harness.Recorded(FakeConn(), "sw1", node)
+    with pytest.raises(BaseException) as caught:
+        rec.configure(["interface eth1"])
+    assert caught.typename == "Skipped", f"ожидался пропуск, получили {caught.typename}"

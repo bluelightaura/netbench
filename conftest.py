@@ -213,8 +213,9 @@ class Recorded:
     запись, которая потом уезжает вложением в Allure.
     """
 
-    def __init__(self, conn, name: str):
+    def __init__(self, conn, name: str, node: Node | None = None):
         self._conn = conn
+        self._node = node
         self.name = name
         self.lines: list[str] = []
 
@@ -226,10 +227,31 @@ class Recorded:
         self.lines.append(f"$ {command}\n{out}")
         return out
 
-    def send_config_set(self, commands, **kw) -> str:
-        out = self._conn.send_config_set(commands, **kw)
-        self.lines.append("$ " + "\n$ ".join(commands) + f"\n{out}")
-        return out
+    def configure(self, commands) -> str:
+        """Правка конфигурации командами из профиля, а не догадками библиотеки.
+
+        send_config_set у netmiko решает за нас, как войти в режим настройки, и
+        для device_type=linux это sudo. На железке, где вход сразу в CLI вроде
+        vtysh, такой разговор не складывается: ждут приглашение оболочки,
+        которого не будет. Что набирать, знает профиль — ровно как и везде
+        здесь.
+
+        Ответ читается по времени, а не по ожидаемому приглашению: в режиме
+        настройки оно другое, и угадывать его значило бы снова зашить знание о
+        конкретной платформе в набор.
+        """
+        keys = (self._node.vars if self._node else {})
+        enter, leave = keys.get("config_enter"), keys.get("config_exit")
+        if not enter or not leave:
+            profile = self._node.profile if self._node else "?"
+            pytest.skip(f"профиль «{profile}» не описывает вход в конфигурацию")
+        answers = []
+        for command in [enter, *commands, leave]:
+            out = self._conn.send_command_timing(
+                command, strip_prompt=False, strip_command=False)
+            answers.append(f"$ {command}\n{out}")
+        self.lines.extend(answers)
+        return "\n".join(answers)
 
     @property
     def transcript(self) -> str:
@@ -252,7 +274,7 @@ def session(bench, request):
                 device_type="linux", host=node.address, port=node.port,
                 username=node.user or USER, password=node.password, fast_cli=False,
             )
-        rec = Recorded(conn, name)
+        rec = Recorded(conn, name, node)
         opened.append(rec)
         return rec
 

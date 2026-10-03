@@ -59,9 +59,9 @@ def test_something(one, session, cmd):
 @pytest.mark.needs("config")
 def test_something_that_changes_the_device(one, session):
     conn = session(one())
-    conn.send_config_set(["interface eth1", "description проба"])
+    conn.configure(["interface eth1", "description проба"])
     assert "проба" in conn.send_command("show running-config")
-    conn.send_config_set(["interface eth1", "no description"])
+    conn.configure(["interface eth1", "no description"])
 
 
 # Доступные фикстуры:

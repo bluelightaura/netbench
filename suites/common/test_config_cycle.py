@@ -18,8 +18,8 @@ def test_change_applies_and_rolls_back(bench, one, session, cmd):
     conn = session(name)
     iface = bench[name].vars.get("interface", "eth1")
     with allure.step("ставлю описание на интерфейс"):
-        conn.send_config_set([f"interface {iface}", "description bench-check"])
+        conn.configure([f"interface {iface}", "description bench-check"])
     assert "bench-check" in conn.send_command(cmd(name, "running_config"))
     with allure.step("снимаю описание обратно"):
-        conn.send_config_set([f"interface {iface}", "no description"])
+        conn.configure([f"interface {iface}", "no description"])
     assert "bench-check" not in conn.send_command(cmd(name, "running_config"))

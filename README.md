@@ -354,6 +354,7 @@ have. Absence is not a defect.
 | `is_real` | virtual or real |
 | `can` | the capabilities of the whole bench |
 | `session` | a session to a node; records the transcript, always closes |
+| `session(...).configure([...])` | edit the configuration using the profile's own enter/exit commands |
 
 **Flags**
 
