@@ -100,9 +100,9 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     name: отчёт
+    env:
+      ALLURE_VERSION: "2.32.0"
     steps:
-      - uses: actions/checkout@v4
-
       - name: Забрать результаты всех стендов
         uses: actions/download-artifact@v4
         with:
@@ -112,19 +112,39 @@ jobs:
 
       # История живёт в самой ветке gh-pages: без неё в отчёте каждый прогон
       # выглядит первым, и тренд по падениям не построить.
-      - name: Забрать историю прошлых отчётов
+      - name: Забрать прошлый отчёт
         uses: actions/checkout@v4
         continue-on-error: true
         with:
           ref: gh-pages
-          path: allure-history
+          path: gh-pages
 
-      - name: Собрать отчёт Allure
-        uses: simple-elf/allure-report-action@v1.12
+      - name: Перенести историю в новые результаты
+        run: |
+          if [ -d gh-pages/history ]; then
+            cp -r gh-pages/history allure-results/history
+            echo "история перенесена: $(ls allure-results/history | wc -l) файлов"
+          else
+            echo "истории нет — это первый отчёт"
+          fi
+
+      - uses: actions/setup-java@v4
         with:
-          allure_results: allure-results
-          allure_history: allure-history
-          keep_reports: 30
+          distribution: temurin
+          java-version: "17"
+
+      # Генератор ставится напрямую, а не чужим экшеном: тот собирал свой образ
+      # из openjdk:8-jre-alpine, которого на Docker Hub больше нет, и падал
+      # вместе со всем отчётом.
+      - name: Поставить Allure
+        run: |
+          curl -fsSL -o allure.tgz \
+            "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz"
+          tar -xzf allure.tgz
+          echo "$PWD/allure-${ALLURE_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Собрать отчёт
+        run: allure generate allure-results --clean -o allure-report
 
       - name: Выложить отчёт на Pages
         if: github.ref == 'refs/heads/main'
@@ -132,4 +152,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
+          publish_dir: allure-report
+
+      # Отчёт доступен и без Pages: на ветках и в pull request он лежит
+      # артефактом, иначе на них отчёта нет вовсе.
+      - name: Сохранить отчёт артефактом
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 14

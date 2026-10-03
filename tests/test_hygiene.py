@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 IP = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
@@ -25,14 +26,28 @@ TEXT_SUFFIXES = {".py", ".yml", ".yaml", ".md", ".ini", ".cfg", ".conf", ".toml"
 
 
 def _files(root: Path):
-    for path in root.rglob("*"):
-        if not path.is_file():
-            continue
-        if any(part in SKIP_DIRS or part.endswith(".egg-info") for part in path.parts):
-            continue
-        if path.suffix.lower() not in TEXT_SUFFIXES:
-            continue
-        yield path
+    """Файлы, которые уедут в репозиторий.
+
+    Спрашивается git, а не файловая система: рядом с исходниками лежит то, что
+    оставляют инструменты - containerlab пишет свой каталог прогона с адресами
+    контейнеров и сгенерированными паролями. Он закрыт .gitignore, никуда не
+    уедет, и ругаться на него незачем.
+    """
+    listed = subprocess.run(
+        ["git", "-C", str(root), "ls-files", "-z"],
+        capture_output=True, text=True, check=False,
+    )
+    if listed.returncode == 0:
+        names = [n for n in listed.stdout.split("\0") if n]
+    else:                                            # не репозиторий - обойти руками
+        names = [str(p.relative_to(root)) for p in root.rglob("*") if p.is_file()]
+        names = [n for n in names if not any(part in SKIP_DIRS or part.startswith("clab-")
+                                             or part.endswith(".egg-info")
+                                             for part in Path(n).parts)]
+    for name in names:
+        path = root / name
+        if path.is_file() and path.suffix.lower() in TEXT_SUFFIXES:
+            yield path
 
 
 def test_no_addresses_outside_the_documentation_ranges(root):
