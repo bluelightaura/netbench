@@ -75,7 +75,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e '.[test]'
-          pytest --bench ${{ matrix.bench }}
+          pytest --bench ${{ matrix.bench }} --require-bench
 
       - name: Погасить стенд
         if: always()

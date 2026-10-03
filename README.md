@@ -361,6 +361,7 @@ have. Absence is not a defect.
 |---|---|
 | `--bench NAME` | which bench to take (wins over `BENCH`) |
 | `--apply` | allow edits to a real device |
+| `--require-bench` | fail the run if every bench check was skipped |
 | `--evidence auto\|always\|never` | when to attach the transcript to the report |
 
 ## The report

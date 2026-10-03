@@ -58,7 +58,7 @@ pipeline {
 
     stage('Тесты') {
       steps {
-        sh '"$VENV/bin/pytest" --bench "$BENCH"'
+        sh '"$VENV/bin/pytest" --bench "$BENCH" --require-bench'
       }
     }
   }

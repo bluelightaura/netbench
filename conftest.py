@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from lab import clab
+
 try:
     import yaml
 except ImportError:                                  # pragma: no cover
@@ -113,15 +115,11 @@ def _virtual(spec: dict) -> dict[str, Node]:
         ).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
         pytest.skip(f"стенд не поднят: {exc}")
-    data = json.loads(out)
-    rows = data.get("containers", data if isinstance(data, list) else [])
-    nodes = {}
-    for row in rows:
-        name = (row.get("label") or row.get("name") or "").split("-")[-1]
-        address = (row.get("ipv4_address") or "").split("/")[0]
-        if name and address:
-            nodes[name] = Node(name, address, declared.get(name, ""))
-    return nodes
+    found = clab.nodes(json.loads(out), list(declared))
+    if not found:
+        pytest.skip(f"containerlab не вернул ни одного узла стенда «{BENCH}»")
+    return {name: Node(name, address, declared.get(name, ""))
+            for name, address in found.items()}
 
 
 def _real(spec: dict) -> dict[str, Node]:
@@ -284,13 +282,21 @@ def _attach(sessions: list[Recorded]) -> None:
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """Слой 4: доложить отчёту, против чего гоняли.
+    """Слой 4: доложить отчёту, против чего гоняли, и не выдать пропуски за успех.
 
     Без этого Allure показывает результаты без контекста, и через неделю по
     отчёту уже не сказать, какой это был стенд и какая топология. Пишется
     здесь, а не в пайплайне, чтобы контекст был одинаковый во всех трёх CI
     и при запуске руками.
     """
+    # Прогон, где все проверки на стенде пропущены, зелёный — и это худший
+    # вид красного: выглядит как успех. Так уже было, когда containerlab сменил
+    # формат вывода: стенд поднимался, узлы работали, разбор возвращал пустоту.
+    if session.config.getoption("--require-bench") and not getattr(session, "bench_ran", False):
+        session.exitstatus = 1
+        print(f"\nстенд «{BENCH}»: ни одна проверка на стенде не выполнилась — "
+              f"все пропущены. Прогон засчитан провальным (--require-bench).")
+
     results = Path(session.config.getoption("--alluredir") or "allure-results")
     if not results.exists():
         return
@@ -321,6 +327,8 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
     if report.when == "call" and report.failed:
         item.bench_failed = True
+    if report.when == "call" and item.get_closest_marker("lab") and not report.skipped:
+        item.session.bench_ran = True
 
 
 def pytest_addoption(parser):
@@ -332,6 +340,10 @@ def pytest_addoption(parser):
     group.addoption(
         "--apply", action="store_true", default=False,
         help="разрешить проверки, меняющие конфигурацию, на настоящих железках",
+    )
+    group.addoption(
+        "--require-bench", action="store_true", default=False,
+        help="считать прогон провальным, если ни одна проверка на стенде не выполнилась",
     )
     group.addoption(
         "--evidence", action="store", default="auto",

@@ -36,7 +36,7 @@ karkas:
   script:
     - make -C lab image
     - make -C lab up TOPO=$TOPO
-    - pytest --bench $BENCH
+    - pytest --bench $BENCH --require-bench
   after_script:
     - make -C lab down TOPO=$TOPO || true
   artifacts:
