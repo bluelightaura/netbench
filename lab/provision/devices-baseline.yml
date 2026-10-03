@@ -1,0 +1,29 @@
+# Привести настоящие железки к известному состоянию перед прогоном.
+#
+# Виртуального стенда это не касается: там конфигурации монтирует containerlab
+# при старте узла. Плейбук нужен ровно там, где железка уже стоит и помнит
+# чужие правки.
+#
+#   BENCH=real.local ansible-playbook -i lab/provision/inventory.py \
+#       lab/provision/baseline.yml
+- name: Базовое состояние стенда
+  hosts: bench
+  gather_facts: false
+
+  tasks:
+    - name: Снять конфигурацию «до» — это доказательство, а не отладка
+      ansible.builtin.raw: show running-config
+      register: before
+      changed_when: false
+
+    - name: Положить снимок рядом с прогоном
+      ansible.builtin.copy:
+        content: "{{ before.stdout }}"
+        dest: "{{ playbook_dir }}/../../evidence/{{ inventory_hostname }}-before.cfg"
+        mode: "0644"
+      delegate_to: localhost
+
+    - name: Применить базовую конфигурацию класса железки
+      ansible.builtin.raw: "{{ item }}"
+      loop: "{{ baseline_commands | default([]) }}"
+      when: baseline_commands is defined

@@ -1,0 +1,34 @@
+# Окружение самого проекта: venv, зависимости, образ узла стенда.
+- name: Поставить python и make
+  ansible.builtin.package:
+    name: [python3, python3-venv, make]
+    state: present
+  become: true
+
+- name: Завести venv
+  ansible.builtin.command: python3 -m venv "{{ bench_root }}/.venv"
+  args:
+    creates: "{{ bench_root }}/.venv/bin/python"
+
+- name: Поставить проект с тестовыми зависимостями
+  ansible.builtin.command: "{{ bench_root }}/.venv/bin/pip install -e '.[test]'"
+  args:
+    chdir: "{{ bench_root }}"
+  changed_when: true
+
+- name: Собрать образ узла стенда
+  community.docker.docker_image:
+    name: bench/frr-ssh
+    tag: latest
+    source: build
+    build:
+      path: "{{ bench_root }}/lab"
+      dockerfile: Dockerfile.frr-ssh
+    state: present
+  failed_when: false        # модуля может не быть — тогда ниже обычный docker
+  register: built
+
+- name: Собрать образ обычным docker, если модуля нет
+  ansible.builtin.command: make -C "{{ bench_root }}/lab" image
+  when: built is failed or built is skipped
+  changed_when: true

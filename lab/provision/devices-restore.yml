@@ -1,0 +1,18 @@
+# Вернуть железки как было: снимок «до» уже снят baseline.yml.
+# Отдельным плейбуком намеренно — откат должен быть вызываемым сам по себе,
+# в том числе когда прогон упал на середине.
+- name: Вернуть стенд в исходное состояние
+  hosts: bench
+  gather_facts: false
+
+  tasks:
+    - name: Проверить, что снимок «до» есть
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../../evidence/{{ inventory_hostname }}-before.cfg"
+      register: snapshot
+      delegate_to: localhost
+
+    - name: Без снимка откатывать нечего — сказать прямо, а не сделать вид
+      ansible.builtin.fail:
+        msg: "нет снимка «до» для {{ inventory_hostname }}: сначала baseline.yml"
+      when: not snapshot.stat.exists

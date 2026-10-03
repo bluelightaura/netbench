@@ -1,0 +1,24 @@
+# Docker нужен containerlab: узлы стенда — контейнеры.
+- name: Поставить Docker
+  ansible.builtin.package:
+    name: "{{ docker_packages }}"
+    state: present
+  vars:
+    docker_packages: "{{ ['docker.io'] if ansible_os_family == 'Debian' else ['docker'] }}"
+
+- name: Запустить и включить службу
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Пустить пользователя к Docker без sudo
+  ansible.builtin.user:
+    name: "{{ bench_user }}"
+    groups: docker
+    append: true
+  notify: Сказать про перелогин
+
+- name: Проверить, что Docker отвечает
+  ansible.builtin.command: docker info
+  changed_when: false

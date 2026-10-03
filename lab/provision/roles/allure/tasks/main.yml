@@ -1,0 +1,29 @@
+# Слой 4. Генератору Allure нужна JVM — поэтому роль отдельная и пропускаемая:
+# тестам он не нужен, нужен отчёту.
+- name: Поставить JRE
+  ansible.builtin.package:
+    name: "{{ 'default-jre-headless' if ansible_os_family == 'Debian' else 'java-21-openjdk-headless' }}"
+    state: present
+
+- name: Посмотреть, стоит ли Allure
+  ansible.builtin.command: allure --version
+  register: allure
+  failed_when: false
+  changed_when: false
+
+- name: Распаковать Allure CLI
+  ansible.builtin.unarchive:
+    src: "https://github.com/allure-framework/allure2/releases/download/{{ allure_version }}/allure-{{ allure_version }}.tgz"
+    dest: /opt
+    remote_src: true
+    creates: "/opt/allure-{{ allure_version }}"
+  vars:
+    allure_version: "2.29.0"
+  when: allure.rc != 0
+
+- name: Положить в PATH
+  ansible.builtin.file:
+    src: "/opt/allure-2.29.0/bin/allure"
+    dest: /usr/local/bin/allure
+    state: link
+  when: allure.rc != 0

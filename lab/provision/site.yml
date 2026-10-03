@@ -1,0 +1,23 @@
+# Развернуть проект на голой машине: от «ничего нет» до «pytest проходит».
+#
+#   ansible-playbook -i lab/provision/inventory.ini lab/provision/site.yml
+#
+# Роли разделены по тому, что каждая ставит, а не по порядку: Docker нужен
+# containerlab, containerlab — стенду, Allure — только отчёту. Allure можно
+# пропустить: ему нужна JVM, а она нужна не всем.
+#
+#   --skip-tags allure        без отчёта
+#   --tags bench              только окружение проекта
+- name: Стенд автотестов на этой машине
+  hosts: bench_hosts
+  become: true
+
+  vars:
+    bench_root: "{{ playbook_dir }}/../.."
+    bench_user: "{{ ansible_user_id }}"
+
+  roles:
+    - {role: docker,       tags: [docker]}
+    - {role: containerlab, tags: [containerlab]}
+    - {role: bench,        tags: [bench], become: false}
+    - {role: allure,       tags: [allure]}

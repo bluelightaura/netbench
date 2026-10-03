@@ -1,0 +1,18 @@
+# containerlab поднимает топологию из одного файла.
+- name: Посмотреть, стоит ли уже
+  ansible.builtin.command: containerlab version
+  register: clab
+  failed_when: false
+  changed_when: false
+
+- name: Поставить containerlab
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -sL https://get.containerlab.dev | bash
+  args:
+    executable: /bin/bash
+  when: clab.rc != 0
+
+- name: Убедиться, что отвечает
+  ansible.builtin.command: containerlab version
+  changed_when: false
