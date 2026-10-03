@@ -1,0 +1,54 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Шаблон команды должен собираться из того, что профиль сам же и даёт.
+
+    Иначе `cmd(""interface"")` падает KeyError уже на живой железке.
+    ","5","test_profile_commands_are_formattable","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"","1","test_tool_against_the_bench[traphy-\u0412\u0438\u0434\u0438\u0442 \u043f\u0440\u0435\u0441\u0435\u0442\u044b \u0438 \u0433\u043e\u0442\u043e\u0432 \u0441\u043e\u0431\u0440\u0430\u0442\u044c ]","suites.tools","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_tools","",""
+"","0","test_cliradar_export_refuses_an_empty_bench","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"","0","test_no_real_bench_descriptor_is_committed","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_hygiene","",""
+"","0","test_tool_against_the_bench[cliradar-\u0417\u0430\u043f\u0443\u0441\u043a\u0430\u0435\u0442\u0441\u044f \u0441 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0435\u0439 \u0441\u0442]","suites.tools","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_tools","",""
+"","3","test_clirunner_keeps_the_port","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"Пароль не должен попадать в файл - только имя переменной окружения.","3","test_cliradar_export_names_the_password_variable_and_holds_no_secret","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"","6","test_every_topology_node_names_a_profile_that_exists","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"Переменная из профиля подставляется без участия теста.","0","test_command_template_takes_profile_variables","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"Адрес живой сети в репозитории - утечка, а не опечатка.","10","test_no_addresses_outside_the_documentation_ranges","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_hygiene","",""
+"","0","test_command_comes_from_the_profile","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"","1","test_tool_against_the_bench[clirunner-\u041f\u0440\u043e\u0433\u043e\u043d \u0431\u0435\u0437 --apply \u043d\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f]","suites.tools","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_tools","",""
+"","0","test_link_between_nodes_is_up","suites.l2","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_switching","",""
+"Настоящий стенд описан файлом: поднимать нечего, containerlab не нужен.","2","test_real_bench_is_read_without_containerlab","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"","6","test_every_topology_binds_an_existing_config","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"Список стендов нужен сообщению об ошибке - он не должен быть пустым.","0","test_known_benches_are_listed_for_a_typo","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"","0","test_cpe_sees_the_controller","suites.sdwan","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_overlay","",""
+"","2","test_virtual_bench_points_at_an_existing_topology","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"","0","test_traphy_export_is_valid_json_with_hosts","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"
+Предусловие: стенд поднят, узлы отвечают по SSH.
+Шаги:        подключиться к каждому узлу, спросить версию.
+Ожидается:   непустой ответ.
+Почему:      молчащую железку нечем отличить от ответившей пусто, и все
+             следующие проверки после этого бессмысленны.
+","0","Каждый узел отвечает на запрос версии","suites.common","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_cli_surface","",""
+"Ключи различий берутся из профиля, а не пишутся руками.","5","test_clirunner_carries_profile_keys","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"","0","test_tool_against_the_bench[clirunner-\u0412\u0438\u0434\u0438\u0442 \u0436\u0435\u043b\u0435\u0437\u043a\u0438 \u0441\u0442\u0435\u043d\u0434\u0430 \u0438 \u0434\u043e\u0441\u0442\u0443\u043a\u0438]","suites.tools","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_tools","",""
+"Образец настоящего стенда описывается именами, а не адресами.
+
+    В своём `*.local.yml` можно писать что угодно - он закрыт .gitignore.
+    ","0","test_bench_descriptors_carry_no_addresses_at_all","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_hygiene","",""
+"","2","test_real_bench_nodes_name_a_profile","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"Ключи разных профилей, слитые в [defaults], означали бы чужие настройки.","3","test_clirunner_does_not_merge_profile_keys_into_defaults","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"","3","test_clirunner_groups_nodes_by_profile","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_export","",""
+"","0","test_command_template_takes_arguments","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"","0","test_bfd_sessions_are_alive","suites.sdwan","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_overlay","",""
+"","0","test_vxlan_tunnels_are_declared","suites.dc","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_fabric","",""
+"","0","Неизвестная команда отвергается, а не проглатывается","suites.common","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_cli_surface","",""
+"","5","test_profiles_declare_capabilities_and_commands","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"","0","test_per_node_password_wins_over_the_common_one","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"Железка не знает понятия - это не дефект, это другая железка.","1","test_unknown_command_skips_instead_of_failing","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"","3","test_every_bench_declares_its_kind","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"Пароли берутся из окружения. Строка с паролем в файле - ошибка.","6","test_no_password_is_written_anywhere","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_hygiene","",""
+"","0","test_every_leaf_sees_the_spine","suites.dc","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_fabric","",""
+"Не снята пагинация — конфигурация обрывается на «--More--», и инструмент читает половину, считая её целым.","0","Длинный вывод приходит целиком","suites.common","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_cli_surface","",""
+"","0","test_password_comes_from_the_environment_not_the_descriptor","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""
+"","0","Правка применяется и снимается","suites.common","Sat Oct 03 15:13:50 UTC 2026","skipped","Sat Oct 03 15:13:50 UTC 2026","","test_config_cycle","",""
+"","0","test_benches_exist","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_descriptors","",""
+"","2","test_capabilities_are_read_without_raising_on_a_missing_profile","tests","Sat Oct 03 15:13:50 UTC 2026","passed","Sat Oct 03 15:13:50 UTC 2026","","test_harness","",""

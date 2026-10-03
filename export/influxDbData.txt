@@ -1,0 +1,15 @@
+launch_status failed=0 1791040474000000000
+launch_status broken=0 1791040474000000000
+launch_status passed=28 1791040474000000000
+launch_status skipped=13 1791040474000000000
+launch_status unknown=0 1791040474000000000
+launch_time duration=185 1791040474000000000
+launch_time min_duration=0 1791040474000000000
+launch_time max_duration=10 1791040474000000000
+launch_time sum_duration=69 1791040474000000000
+launch_time start=1791040430466 1791040474000000000
+launch_time stop=1791040430651 1791040474000000000
+launch_problems инструмент_не_установлен=4 1791040474000000000
+launch_problems железка_не_умеет=4 1791040474000000000
+launch_retries retries=82 1791040474000000000
+launch_retries run=41 1791040474000000000
