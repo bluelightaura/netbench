@@ -1,10 +1,14 @@
 # CPE в SD-WAN: тот же разговор по CLI, другой словарь и другие умения.
 name: cpe-generic
 prompt: '\S+[#>]\s*$'
+# Диалект узла, который реально поднимается на виртуальном стенде (FRR).
+# У настоящего CPE вендора здесь будут свои слова — и меняются только они.
+# Выход из режима настройки и сохранение — разные действия: commit в vtysh
+# сохраняет, но не выходит, и сессия остаётся в режиме настройки.
 config_enter: configure terminal
-config_exit: commit
+config_exit: end
 config_cmd: show running-config
-save_cmd: commit
+save_cmd: write memory
 errors:
   - '% Invalid'
   - 'syntax error'

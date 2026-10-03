@@ -92,3 +92,28 @@ def test_profile_commands_are_formattable(root):
             # Поля, которые тест передаёт сам (iface, vlan), заполняются вызовом.
             assert missing <= {"iface", "vlan", "neighbor", "peer"}, \
                 f"{path.name}: команда «{what}» требует {missing}, профиль их не даёт"
+
+
+def test_profile_that_claims_config_describes_how_to_enter_and_leave_it(root):
+    """Умение «config» без описанных команд — обещание, которое не выполнить."""
+    for path in _profiles(root):
+        spec = _read(path)
+        if "config" not in (spec.get("capabilities") or []):
+            continue
+        for key in ("config_enter", "config_exit", "config_cmd"):
+            assert spec.get(key), f"{path.name}: объявлен config, но нет ключа {key}"
+
+
+def test_leaving_config_mode_is_not_the_same_as_saving(root):
+    """Выход и сохранение — разные действия.
+
+    Совпали — почти наверняка одно из них описано неверно: так уже было, когда
+    выходом значился commit, который сохраняет, но из режима не выводит, и
+    следующая же команда получала «Unknown command».
+    """
+    for path in _profiles(root):
+        spec = _read(path)
+        exit_cmd, save_cmd = spec.get("config_exit"), spec.get("save_cmd")
+        if exit_cmd and save_cmd:
+            assert exit_cmd != save_cmd, \
+                f"{path.name}: config_exit и save_cmd — одна и та же команда «{exit_cmd}»"
