@@ -1,0 +1,25 @@
+# Чем эта железка отличается от другой — данными, а не кодом.
+# Та же идея, что в инвентаре CLIRunner: профилей вендоров нет, есть ключи.
+name: l3-switch
+prompt: '\S+[#>]\s*$'
+config_enter: configure terminal
+config_exit: end
+config_cmd: show running-config
+save_cmd: write memory
+errors:
+  - '% Unknown command'
+  - '% Invalid input'
+volatile:
+  - '^Building configuration'
+  - 'uptime is'
+capabilities: [cli, config, l2, routing]
+
+# Что именно набирать — знает профиль, а не тест. Тест просит «версию»,
+# «конфигурацию», «интерфейс» — и остаётся вендоронезависимым.
+commands:
+  version: show version
+  running_config: show running-config
+  interface: show interface {iface}
+  neighbors: show ip ospf neighbor
+  bogus: definitely-not-a-command
+interface: eth1

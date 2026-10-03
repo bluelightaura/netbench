@@ -1,0 +1,13 @@
+# Стенд «ЦОД»: два листа и спайн между ними.
+name: bench-dc
+topology:
+  nodes:
+    spine1: {kind: linux, image: bench/frr-ssh:latest, labels: {profile: dc-fabric},
+             binds: ["../configs/dc/spine1.conf:/etc/frr/frr.conf:ro"]}
+    leaf1:  {kind: linux, image: bench/frr-ssh:latest, labels: {profile: dc-fabric},
+             binds: ["../configs/dc/leaf1.conf:/etc/frr/frr.conf:ro"]}
+    leaf2:  {kind: linux, image: bench/frr-ssh:latest, labels: {profile: dc-fabric},
+             binds: ["../configs/dc/leaf2.conf:/etc/frr/frr.conf:ro"]}
+  links:
+    - endpoints: ["leaf1:eth1", "spine1:eth1"]
+    - endpoints: ["leaf2:eth1", "spine1:eth2"]

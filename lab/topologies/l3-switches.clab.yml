@@ -1,0 +1,10 @@
+# Стенд «коммутаторы»: два узла и линк между ними.
+name: bench-l3
+topology:
+  nodes:
+    sw1: {kind: linux, image: bench/frr-ssh:latest, labels: {profile: l3-switch},
+          binds: ["../configs/switch/sw1.conf:/etc/frr/frr.conf:ro"]}
+    sw2: {kind: linux, image: bench/frr-ssh:latest, labels: {profile: l3-switch},
+          binds: ["../configs/switch/sw2.conf:/etc/frr/frr.conf:ro"]}
+  links:
+    - endpoints: ["sw1:eth1", "sw2:eth1"]

@@ -1,0 +1,23 @@
+# Цодовый коммутатор: тот же разговор по CLI, свой словарь и свои умения.
+# Отличие от L3-коммутатора — не в коде тестов, а в этих двух полях снизу.
+name: dc-fabric
+prompt: '\S+[#>]\s*$'
+config_enter: configure terminal
+config_exit: end
+config_cmd: show running-config
+save_cmd: write memory
+errors:
+  - '% Invalid input'
+  - '% Unknown command'
+volatile:
+  - '^Building configuration'
+  - 'uptime is'
+capabilities: [cli, config, l2, l3, routing, evpn, vxlan]
+
+commands:
+  version: show version
+  running_config: show running-config
+  interface: show interface {iface}
+  neighbors: show ip ospf neighbor
+  bogus: definitely-not-a-command
+interface: eth1

@@ -1,0 +1,14 @@
+# FRR сам по себе sshd не поднимает, а инструменты ходят по SSH — поэтому
+# образ собирается свой. Это первое, что надо решить на стенде, и решается
+# оно здесь, а не обходится подменой транспорта в тестах.
+FROM quay.io/frrouting/frr:9.1.0
+
+RUN apk add --no-cache openssh-server && \
+    ssh-keygen -A && \
+    adduser -D -s /usr/bin/vtysh netops && \
+    echo 'netops:netops' | chpasswd && \
+    addgroup netops frrvty
+
+# Логин сразу попадает в vtysh: сессия выглядит как настоящая консоль железки.
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

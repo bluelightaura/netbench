@@ -1,0 +1,15 @@
+# Стенд «CPE в SD-WAN»: две площадки и контроллер между ними.
+# Образы и конфигурации свои — набор тестов при этом не меняется, меняются
+# профиль узла и набор умений, которые он объявляет.
+name: bench-sdwan
+topology:
+  nodes:
+    ctrl: {kind: linux, image: bench/frr-ssh:latest, labels: {profile: cpe-generic},
+           binds: ["../configs/cpe/ctrl.conf:/etc/frr/frr.conf:ro"]}
+    cpe1: {kind: linux, image: bench/frr-ssh:latest, labels: {profile: cpe-generic},
+           binds: ["../configs/cpe/cpe1.conf:/etc/frr/frr.conf:ro"]}
+    cpe2: {kind: linux, image: bench/frr-ssh:latest, labels: {profile: cpe-generic},
+           binds: ["../configs/cpe/cpe2.conf:/etc/frr/frr.conf:ro"]}
+  links:
+    - endpoints: ["cpe1:eth1", "ctrl:eth1"]
+    - endpoints: ["cpe2:eth1", "ctrl:eth2"]

@@ -1,0 +1,23 @@
+# CPE в SD-WAN: тот же разговор по CLI, другой словарь и другие умения.
+name: cpe-generic
+prompt: '\S+[#>]\s*$'
+config_enter: configure terminal
+config_exit: commit
+config_cmd: show running-config
+save_cmd: commit
+errors:
+  - '% Invalid'
+  - 'syntax error'
+volatile:
+  - 'last-updated'
+capabilities: [cli, config, sdwan, tunnels, bfd]
+
+# У другого вендора те же понятия называются иначе — меняется только здесь.
+commands:
+  version: show version
+  running_config: show running-config
+  interface: show interface {iface}
+  neighbors: show ip ospf neighbor
+  tunnels: show bfd peers
+  bogus: definitely-not-a-command
+interface: eth1
