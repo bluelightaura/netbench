@@ -1,0 +1,9 @@
+name: traphy
+binary: traphy
+export: traphy
+export_as: targets.json
+
+checks:
+  - title: Видит пресеты и готов собрать скрипт
+    run: ["presets"]
+    expect: "ip_sweep"

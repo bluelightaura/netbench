@@ -1,0 +1,23 @@
+# Как подключить инструмент к стенду. Файл, а не код: добавить свой — значит
+# положить рядом такой же, ничего не программируя.
+name: clirunner
+binary: clirunner           # нет в системе — наборы по нему пропускаются
+export: clirunner           # в каком формате выгрузить стенд (lab/export.py)
+export_as: inventory.conf
+
+checks:
+  - title: Видит железки стенда и достукивается до них
+    run: ["-i", "{export}", "status"]
+    expect: "доступно"
+
+  - title: Прогон без --apply не отправляет ни одной команды
+    needs_file:
+      name: probe.book
+      text: |
+        name Проба
+
+        task Смотрим
+          exec:
+            show version
+    run: ["-i", "{export}", "run", "{file}", "-t", "all"]
+    expect: "dry-run|ничего не отправ"

@@ -1,0 +1,9 @@
+name: cliradar
+binary: cliradar
+export: cliradar
+export_as: config.yml
+
+checks:
+  - title: Запускается с конфигурацией стенда
+    run: ["--config", "{export}", "--help"]
+    expect: "."
