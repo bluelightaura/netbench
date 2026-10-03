@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# Слой 4: сырые результаты и собранный отчёт — artefacts CI, не исходники.
+allure-results/
+allure-report/
+# Containerlab оставляет за собой каталог прогона с конфигами и логами узлов.
+clab-*/
+.clab.*
+# Описания настоящих стендов: адреса и логины железок.
+lab/benches/*.local.yml
+# Снимки конфигураций железок перед прогоном: доказательства, не исходники.
+evidence/
+# Состояние и планы Terraform: в них адреса и всё, что создано.
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfplan
+infra/*.tfvars
+!infra/*.tfvars.example

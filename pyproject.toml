@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netbench"
+version = "0.1.0"
+description = "Автотесты сетевого оборудования на виртуальном стенде: инфра, тесты, CI, отчёт"
+requires-python = ">=3.11"
+dependencies = []
+# PyYAML нужен, чтобы читать топологию и профили: они — данные, а не код.
+
+[project.optional-dependencies]
+# Ansible нужен только чтобы готовить настоящие железки. Тестам он не нужен:
+# виртуальный стенд разворачивает containerlab, и ставить его в CI незачем.
+provision = ["ansible-core>=2.16", "PyYAML>=6,<7"]
+# Тесты ходят на узлы по SSH; отчёт собирается Allure.
+test = ["pytest>=8.0,<10", "netmiko>=4.0", "allure-pytest>=2.13,<3", "PyYAML>=6,<7"]
+
+[tool.pytest.ini_options]
+addopts = "-q --alluredir=allure-results"
+testpaths = ["suites", "tests"]
+markers = [
+  "lab: нужен поднятый стенд",
+  "needs(cap): набор требует умения, объявленного профилем узла",
+  "changes_config: правит конфигурацию железки; на настоящей нужен --apply",
+  "smoke: минимум, без которого остальное бессмысленно",
+  "regress: основной объём",
+  "slow: долгие — перезагрузки, заливки, ожидания",
+]
+
+# Проект — набор тестов, а не библиотека: пакетов для установки в нём нет,
+# и автопоиск setuptools спотыкается на каталогах lab/ infra/ suites/ assets/.
+[tool.setuptools]
+py-modules = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP", "SIM", "RUF"]
+ignore = [
+  # Набор и его сообщения — по-русски. «Ambiguous unicode character» срабатывает
+  # на каждую кириллическую о и а, то есть на все строки подряд.
+  "RUF001", "RUF002", "RUF003",
+]
