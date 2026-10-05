@@ -17,6 +17,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 import pytest
 
@@ -334,12 +335,40 @@ def pytest_sessionfinish(session, exitstatus):
         "Python": platform.python_version(),
         "pytest": pytest.__version__,
     }
-    text = "".join(f"{k}={v}\n" for k, v in rows.items())
-    (results / "environment.properties").write_text(text, encoding="utf-8")
+    # XML, а не .properties: тот формат читается как ISO-8859-1 и разделяет
+    # ключ и значение по первому пробелу. Русские названия превращались в
+    # кракозябры, а «Узлов в описании» резалось на ключ «Узлов» и значение
+    # «в описании». XML — UTF-8, и пробел в названии для него просто пробел.
+    rendered = "".join(
+        f"  <parameter>\n    <key>{escape(str(k))}</key>\n"
+        f"    <value>{escape(str(v))}</value>\n  </parameter>\n"
+        for k, v in rows.items())
+    (results / "environment.xml").write_text(
+        f"<environment>\n{rendered}</environment>\n", encoding="utf-8")
 
     categories = ROOT / "lab" / "allure" / "categories.json"
     if categories.exists():
         shutil.copyfile(categories, results / "categories.json")
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    """Пометить тест стендом, на котором он шёл.
+
+    Без этого отчёт из трёх стендов показывает один: Allure считает тест тем
+    же самым, когда совпадают имя и параметры, а имя стенда в них не входило.
+    Три прогона складывались в повторы одного, и «47 проверок на фабрике ЦОД»
+    в отчёте было не найти.
+
+    Хуком, а не фикстурой, и строго первым: до теста, пропущенного ещё при
+    сборе, фикстура не доходит - а пропуск на одном стенде и пропуск на другом
+    это тоже два разных факта.
+    """
+    try:
+        import allure
+    except ImportError:                              # pragma: no cover
+        return
+    allure.dynamic.parameter("стенд", BENCH)
 
 
 @pytest.hookimpl(hookwrapper=True)
